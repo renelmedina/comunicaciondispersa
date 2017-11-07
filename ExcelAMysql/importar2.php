@@ -419,10 +419,11 @@
                 map.addListener('click', addLatLng);
                 DibujarPilininea();
                 //Aun no funcionara el menu contextual por problemas en duplicidad de clicks
-                //PoliniaSelecionador.addListener('rightclick',subMenuPolilinea);
+                PoliniaSelecionador.addListener('rightclick',subMenuPolilinea);
                 //PoliniaSelecionador.addListener('dblclick',fnAsignarPolilinea);
                 PoliniaSelecionador.addListener('dragend',fnModificarPuntos);
-                PoliniaSelecionador.addListener('click',fnDatosPoligono);
+                PoliniaSelecionador.addListener('change',fnModificarPuntos);
+                //PoliniaSelecionador.addListener('click',fnDatosPoligono);
                 break;
             case 'ninguno':
                 google.maps.event.clearListeners(map, 'click');
@@ -433,20 +434,16 @@
         }
     }
     function fnDatosPoligono(event) {
-        PoliniaSelecionador=this;
         alert(PoliniaSelecionador.NombrePolilinea);
+    }
+    function fnModificarPuntos(event) {
+        PoliniaSelecionador=this;
         MarcadoresSeleccionados=new Array();
-        var path = PoliniaSelecionador.getPath();
-        var cantidad=0;
         features.forEach(function(feature) {
             if (google.maps.geometry.poly.containsLocation(feature.position, PoliniaSelecionador)) {
                 MarcadoresSeleccionados.push(feature.nombreMarcador);
-                cantidad+=1;
             }
         });
-        if (cantidad>0) {
-            alert(cantidad + " Encontrados");
-        }
         var contadorIncoincidente=0;
         //Verificando que no haya el mismo ID para que no sea repetido
         for(var i = 0; i < PuntosSelecionados.length; i++){
@@ -455,42 +452,6 @@
             }else{
                 contadorIncoincidente+=1;
             }
-        }
-        //Creando el menu de agrupamiento
-        fnRepresentarSeleccionado();
-        this.setMap(map);
-    }
-    function fnModificarPuntos(event) {
-        MarcadoresSeleccionados=new Array();
-        var path = PoliniaSelecionador.getPath();
-        features.forEach(function(feature) {
-            if (google.maps.geometry.poly.containsLocation(feature.position, PoliniaSelecionador)) {
-                MarcadoresSeleccionados.push(feature.nombreMarcador);
-            }
-        });
-        if (PuntosSelecionados.length<=0) {
-            PuntosSelecionados.push({
-                idTrabajador:NombreAleatorio,
-                contratos:MarcadoresSeleccionados
-            })
-        }
-        var contadorIncoincidente=0;
-        //Verificando que no haya el mismo ID para que no sea repetido
-        for(var i = 0; i < PuntosSelecionados.length; i++){
-            if(PuntosSelecionados[i].idTrabajador == NombreAleatorio){
-                PuntosSelecionados[i].contratos=MarcadoresSeleccionados;
-            }else{
-                contadorIncoincidente+=1;
-            }
-        }
-
-        //alert(contadorIncoincidente);
-        if (contadorIncoincidente==PuntosSelecionados.length) {
-            PuntosSelecionados.push({
-                idTrabajador:NombreAleatorio,
-                contratos:MarcadoresSeleccionados
-            })
-            contadorIncoincidente=0;
         }
         //Creando el menu de agrupamiento
         fnRepresentarSeleccionado();
@@ -588,6 +549,7 @@
     }
     function subMenuPolilinea(event) {
         // body...
+        //alert(this.NombrePolilinea);
         document.getElementById("SubMenuOpcionesPolilinea").style.display="block";
         document.getElementById("SubMenuOpcionesPolilinea").style.top=varMouseY+"px";
         document.getElementById("SubMenuOpcionesPolilinea").style.left=varMouseX+"px";
@@ -598,7 +560,7 @@
         });
         //Asignando segun el valor de los controles DOM
         //var x = document.getElementsByClassName("clPersonal");
-        //var elem=this;
+        var elem=this;
         //var actu;
         //for ( var i = 0; i < x.length; i++) {
             //x[i].onclick  = fnAsignarPolilinea(this.NombrePolilinea,x[i].id,x[i].innerHTML);
@@ -612,13 +574,14 @@
             /*$(x[i]).on( "click", function( event ) {
               fnAsignarPolilinea(elem,elem.NombrePolilinea,actu.innerHTML,actu.innerHTML)
             });*/
-            /*$(".clPersonal").click(function() {
-                alert("En el boton");
-                //fnAsignarPolilinea(elem,elem.NombrePolilinea,this.innerHTML,this.innerHTML)
-            });*/
+            $(".clPersonal").off();
+            $(".clPersonal").click(function() {
+                //alert(elem.NombrePolilinea);
+                fnAsignarPolilinea(elem,elem.NombrePolilinea,this.innerHTML,this.innerHTML)
+            });
             /*$( ".clPersonal" ).each(function( index ) {
                 $(this).click(function() {
-                    alert($(this).text());
+                    alert(elem.NombrePolilinea);
                     //fnAsignarPolilinea(elem,elem.NombrePolilinea,this.innerHTML,this.innerHTML)
                 })
             });*/
@@ -635,7 +598,7 @@
     function fnAsignarPolilinea(elemento,idTrabajador,NuevoIDTrabajador,NombreTrabajador) {
         //console.log("idTrabajador: "+idTrabajador+", NuevoIDTrabajador: "+NuevoIDTrabajador+" ,NombreTrabajador: "+NombreTrabajador);
         //alert(document.getElementsByName(idTrabajador).value);
-        alert(elemento.NombrePolilinea);
+        //alert(elemento.NombrePolilinea);
         for(var i = 0; i < PuntosSelecionados.length; i++){
             if(PuntosSelecionados[i].idTrabajador == idTrabajador){
                 PuntosSelecionados[i].idTrabajador=NuevoIDTrabajador;
