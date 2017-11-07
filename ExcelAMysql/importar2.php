@@ -74,7 +74,6 @@
             padding: 0;
             left: 0;
         }
-        //Nueva linea
         .ulsubmenupolilinea li > ul li a{
             color: white;
         }
@@ -580,6 +579,7 @@
     function fnRepresentarSeleccionado() {
         //document.getElementById("asignaciones").innerHTML="";
         divMenuAgrupado="";
+        divContenidoAgrupado="";
         var varContratosAgrupado="";
         for(var i = 0; i < PuntosSelecionados.length; i++){
             //divMenuAgrupado+="<input type='button' value='"+PuntosSelecionados[i].idTrabajador+"' class='tablinks' ondblclick='alert(this.value);' onclick=\"openCity(event, '"+PuntosSelecionados[i].idTrabajador+"')\">";
