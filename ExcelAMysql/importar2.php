@@ -416,11 +416,13 @@
             case 'seleccionarPuntos':
                 document.getElementById("SubMenuOpcionesPolilinea").style.display="none";
                 NombreAleatorio=generarNombreAleatorio(5);
-                
                 map.addListener('click', addLatLng);
                 DibujarPilininea();
-                PoliniaSelecionador.addListener('rightclick',subMenuPolilinea);
+                //Aun no funcionara el menu contextual por problemas en duplicidad de clicks
+                //PoliniaSelecionador.addListener('rightclick',subMenuPolilinea);
                 //PoliniaSelecionador.addListener('dblclick',fnAsignarPolilinea);
+                PoliniaSelecionador.addListener('dragend',fnModificarPuntos);
+                PoliniaSelecionador.addListener('click',fnDatosPoligono);
                 break;
             case 'ninguno':
                 google.maps.event.clearListeners(map, 'click');
@@ -429,6 +431,69 @@
             default:
                 //code block
         }
+    }
+    function fnDatosPoligono(event) {
+        PoliniaSelecionador=this;
+        alert(PoliniaSelecionador.NombrePolilinea);
+        MarcadoresSeleccionados=new Array();
+        var path = PoliniaSelecionador.getPath();
+        var cantidad=0;
+        features.forEach(function(feature) {
+            if (google.maps.geometry.poly.containsLocation(feature.position, PoliniaSelecionador)) {
+                MarcadoresSeleccionados.push(feature.nombreMarcador);
+                cantidad+=1;
+            }
+        });
+        if (cantidad>0) {
+            alert(cantidad + " Encontrados");
+        }
+        var contadorIncoincidente=0;
+        //Verificando que no haya el mismo ID para que no sea repetido
+        for(var i = 0; i < PuntosSelecionados.length; i++){
+            if(PuntosSelecionados[i].idTrabajador == PoliniaSelecionador.NombrePolilinea){
+                PuntosSelecionados[i].contratos=MarcadoresSeleccionados;
+            }else{
+                contadorIncoincidente+=1;
+            }
+        }
+        //Creando el menu de agrupamiento
+        fnRepresentarSeleccionado();
+        this.setMap(map);
+    }
+    function fnModificarPuntos(event) {
+        MarcadoresSeleccionados=new Array();
+        var path = PoliniaSelecionador.getPath();
+        features.forEach(function(feature) {
+            if (google.maps.geometry.poly.containsLocation(feature.position, PoliniaSelecionador)) {
+                MarcadoresSeleccionados.push(feature.nombreMarcador);
+            }
+        });
+        if (PuntosSelecionados.length<=0) {
+            PuntosSelecionados.push({
+                idTrabajador:NombreAleatorio,
+                contratos:MarcadoresSeleccionados
+            })
+        }
+        var contadorIncoincidente=0;
+        //Verificando que no haya el mismo ID para que no sea repetido
+        for(var i = 0; i < PuntosSelecionados.length; i++){
+            if(PuntosSelecionados[i].idTrabajador == NombreAleatorio){
+                PuntosSelecionados[i].contratos=MarcadoresSeleccionados;
+            }else{
+                contadorIncoincidente+=1;
+            }
+        }
+
+        //alert(contadorIncoincidente);
+        if (contadorIncoincidente==PuntosSelecionados.length) {
+            PuntosSelecionados.push({
+                idTrabajador:NombreAleatorio,
+                contratos:MarcadoresSeleccionados
+            })
+            contadorIncoincidente=0;
+        }
+        //Creando el menu de agrupamiento
+        fnRepresentarSeleccionado();
     }
     var NombreAleatorio;
     var divMenuAgrupado;
@@ -446,6 +511,7 @@
         // Because path is an MVCArray, we can simply append a new coordinate
         // Agregamos el nuevo nuevo.
         path.push(event.latLng);
+
         features.forEach(function(feature) {
             if (google.maps.geometry.poly.containsLocation(feature.position, PoliniaSelecionador)) {
                 /*var marker = new google.maps.Marker({
@@ -487,7 +553,7 @@
         //Creando el menu de agrupamiento
         fnRepresentarSeleccionado();
         //PuntosSelecionados[0].idTrabajador[0].contratos.push();
-        console.log(PuntosSelecionados);
+        //console.log(PuntosSelecionados);
         /*var resultColor =
             google.maps.geometry.poly.containsLocation(e.latLng, PoliniaSelecionador) ?
             'red' :
@@ -517,6 +583,7 @@
             NombrePolilinea:NombreAleatorio
         });
         PoliniaSelecionador.setMap(map);
+
         
     }
     function subMenuPolilinea(event) {
@@ -530,9 +597,9 @@
             fnOcultarSubmenu();
         });
         //Asignando segun el valor de los controles DOM
-        var x = document.getElementsByClassName("clPersonal");
-        var elem=this;
-        var actu;
+        //var x = document.getElementsByClassName("clPersonal");
+        //var elem=this;
+        //var actu;
         //for ( var i = 0; i < x.length; i++) {
             //x[i].onclick  = fnAsignarPolilinea(this.NombrePolilinea,x[i].id,x[i].innerHTML);
             //actu=x[i];
@@ -545,22 +612,35 @@
             /*$(x[i]).on( "click", function( event ) {
               fnAsignarPolilinea(elem,elem.NombrePolilinea,actu.innerHTML,actu.innerHTML)
             });*/
-            $(".clPersonal").click(function() {
-                fnAsignarPolilinea(elem,elem.NombrePolilinea,this.innerHTML,this.innerHTML)
-            });
+            /*$(".clPersonal").click(function() {
+                alert("En el boton");
+                //fnAsignarPolilinea(elem,elem.NombrePolilinea,this.innerHTML,this.innerHTML)
+            });*/
+            /*$( ".clPersonal" ).each(function( index ) {
+                $(this).click(function() {
+                    alert($(this).text());
+                    //fnAsignarPolilinea(elem,elem.NombrePolilinea,this.innerHTML,this.innerHTML)
+                })
+            });*/
+            /*var varElemto=$(".clPersonal");
+            google.maps.event.addDomListener(varElemto, 'click', function() {
+              window.alert('Map was clicked!');
+            });*/
+            //google.maps.event.clearListeners(this, 'rightclick');
         //}
         
         //fnAsignarPolilinea(this.NombrePolilinea,generarNombreAleatorio(5),"Trabajador1");
         //alert(this.NombrePolilinea);
     }
     function fnAsignarPolilinea(elemento,idTrabajador,NuevoIDTrabajador,NombreTrabajador) {
-        elemento.NombrePolilinea=NuevoIDTrabajador;
         //console.log("idTrabajador: "+idTrabajador+", NuevoIDTrabajador: "+NuevoIDTrabajador+" ,NombreTrabajador: "+NombreTrabajador);
         //alert(document.getElementsByName(idTrabajador).value);
+        alert(elemento.NombrePolilinea);
         for(var i = 0; i < PuntosSelecionados.length; i++){
             if(PuntosSelecionados[i].idTrabajador == idTrabajador){
                 PuntosSelecionados[i].idTrabajador=NuevoIDTrabajador;
                 PuntosSelecionados[i].NombrePolilinea=NombreTrabajador;
+                elemento.NombrePolilinea=NuevoIDTrabajador;
             }
         }
         //console.log(elemento);
